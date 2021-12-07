@@ -61,6 +61,16 @@ fn solve_part_1(positions: &[i32]) -> anyhow::Result<Solution> {
     find_min_distance_sum(positions, part_1_distance)
 }
 
+fn part_2_distance(pos1: i32, pos2: i32) -> u32 {
+    let dist = part_1_distance(pos1, pos2);
+
+    (dist * (dist + 1)) / 2
+}
+
+fn solve_part_2(positions: &[i32]) -> anyhow::Result<Solution> {
+    find_min_distance_sum(positions, part_2_distance)
+}
+
 fn main_impl() -> anyhow::Result<()> {
     let mut line = String::new();
     std::io::stdin().lock().read_line(&mut line)?;
@@ -68,6 +78,8 @@ fn main_impl() -> anyhow::Result<()> {
     let positions = parse_input_line(&line)?;
 
     println!("Part 1 solution {:#?}", solve_part_1(&positions));
+
+    println!("Part 2 solution {:#?}", solve_part_2(&positions));
 
     Ok(())
 }
