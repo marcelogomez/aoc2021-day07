@@ -53,16 +53,21 @@ where
         .ok_or_else(|| anyhow::anyhow!("expected at least one position"))
 }
 
+fn part_1_distance(pos1: i32, pos2: i32) -> u32 {
+    (pos1 - pos2).abs() as u32
+}
+
+fn solve_part_1(positions: &[i32]) -> anyhow::Result<Solution> {
+    find_min_distance_sum(positions, part_1_distance)
+}
+
 fn main_impl() -> anyhow::Result<()> {
     let mut line = String::new();
     std::io::stdin().lock().read_line(&mut line)?;
 
     let positions = parse_input_line(&line)?;
 
-    println!(
-        "Part 1 solution {:#?}",
-        find_min_distance_sum(&positions, |dest, position| (dest - position).abs() as u32)?
-    );
+    println!("Part 1 solution {:#?}", solve_part_1(&positions));
 
     Ok(())
 }
