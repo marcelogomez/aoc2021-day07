@@ -3,8 +3,43 @@
 
 use std::{io::BufRead, str::FromStr};
 
-fn parse_input_line(s: &str) -> anyhow::Result<Vec<u32>> {
-    Ok(s.split(',').map(u32::from_str).collect::<Result<_, _>>()?)
+#[derive(Debug, Copy, Clone)]
+struct Solution {
+    pub dest: u32,
+    pub distance_sum: u32,
+}
+
+fn parse_input_line(s: &str) -> anyhow::Result<Vec<i32>> {
+    Ok(s.trim()
+        .split(',')
+        .filter(|s| !s.is_empty())
+        .map(i32::from_str)
+        .collect::<Result<_, _>>()?)
+}
+
+fn calculate_distance_sum(dest: i32, positions: &[i32]) -> u32 {
+    positions
+        .iter()
+        .map(|position| (dest - position).abs())
+        .map(|distance| distance as u32)
+        .sum()
+}
+
+fn find_min_distance_sum(positions: &[i32]) -> anyhow::Result<Solution> {
+    let start = *positions
+        .iter()
+        .min()
+        .ok_or_else(|| anyhow::anyhow!("expected at least one position"))?;
+    let end = *positions
+        .iter()
+        .max()
+        .ok_or_else(|| anyhow::anyhow!("expected at least one position"))?;
+
+    (start..end)
+        .map(|dest| (dest as u32, calculate_distance_sum(dest, positions)))
+        .min_by(|sol_1, sol_2| sol_1.1.cmp(&sol_2.1))
+        .map(|(dest, distance_sum)| Solution { dest, distance_sum })
+        .ok_or_else(|| anyhow::anyhow!("expected at least one position"))
 }
 
 fn main_impl() -> anyhow::Result<()> {
@@ -13,7 +48,7 @@ fn main_impl() -> anyhow::Result<()> {
 
     let positions = parse_input_line(&line)?;
 
-    println!("{:?}", positions);
+    println!("Part 1 solution {:#?}", find_min_distance_sum(&positions)?);
 
     Ok(())
 }
