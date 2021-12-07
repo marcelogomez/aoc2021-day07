@@ -17,15 +17,20 @@ fn parse_input_line(s: &str) -> anyhow::Result<Vec<i32>> {
         .collect::<Result<_, _>>()?)
 }
 
-fn calculate_distance_sum(dest: i32, positions: &[i32]) -> u32 {
+fn calculate_distance_sum<F>(dest: i32, positions: &[i32], distance_fn: F) -> u32
+where
+    F: Fn(i32, i32) -> u32,
+{
     positions
         .iter()
-        .map(|position| (dest - position).abs())
-        .map(|distance| distance as u32)
+        .map(|position| distance_fn(dest, *position))
         .sum()
 }
 
-fn find_min_distance_sum(positions: &[i32]) -> anyhow::Result<Solution> {
+fn find_min_distance_sum<F>(positions: &[i32], distance_fn: F) -> anyhow::Result<Solution>
+where
+    F: Fn(i32, i32) -> u32 + Clone,
+{
     let start = *positions
         .iter()
         .min()
@@ -36,7 +41,13 @@ fn find_min_distance_sum(positions: &[i32]) -> anyhow::Result<Solution> {
         .ok_or_else(|| anyhow::anyhow!("expected at least one position"))?;
 
     (start..end)
-        .map(|dest| (dest as u32, calculate_distance_sum(dest, positions)))
+        .map(|dest| {
+            (
+                dest as u32,
+                // TODO: Figure out how to avoid this clone
+                calculate_distance_sum(dest, positions, distance_fn.clone()),
+            )
+        })
         .min_by(|sol_1, sol_2| sol_1.1.cmp(&sol_2.1))
         .map(|(dest, distance_sum)| Solution { dest, distance_sum })
         .ok_or_else(|| anyhow::anyhow!("expected at least one position"))
@@ -48,7 +59,10 @@ fn main_impl() -> anyhow::Result<()> {
 
     let positions = parse_input_line(&line)?;
 
-    println!("Part 1 solution {:#?}", find_min_distance_sum(&positions)?);
+    println!(
+        "Part 1 solution {:#?}",
+        find_min_distance_sum(&positions, |dest, position| (dest - position).abs() as u32)?
+    );
 
     Ok(())
 }
